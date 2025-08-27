@@ -1,39 +1,83 @@
 /* eslint-disable react/prop-types */
-
-import { Link } from 'react-router-dom'
+import { useQuery } from "@tanstack/react-query";
+import axios from "axios";
+import { Link } from "react-router-dom";
 
 const JobCard = () => {
+  // all job posts load with Tanstack Query
+  const { data: posts = [] } = useQuery({
+    queryKey: ["job-post"],
+    queryFn: async () => {
+      const { data } = await axios.get(
+        `${import.meta.env.VITE_BASE_URL}/posts`
+      );
+      return data;
+    },
+  });
+
+  console.log(posts);
+
   return (
-    <Link
-      to={`/job/1`}
-      className='w-full max-w-sm px-4 py-3 bg-white rounded-md shadow-md hover:scale-[1.05] transition-all'
-    >
-      <div className='flex items-center justify-between'>
-        <span className='text-xs font-light text-gray-800 '>
-          Deadline: 28/05/2024
-        </span>
-        <span className='px-3 py-1 text-[8px] text-blue-800 uppercase bg-blue-200 rounded-full '>
-          Web Development
-        </span>
-      </div>
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      {posts.length > 0 ? (
+        posts.map(
+          ({
+            _id,
+            title,
+            deadline,
+            category,
+            description,
+            minPrice,
+            maxPrice,
+            buyer: { name: buyerName } = {},
+            totalBids = 0,
+          }) => (
+            <Link
+              to={`/job/${_id}`}
+              key={_id}
+              className="w-full max-w-sm px-4 py-3 bg-white rounded-md shadow-md hover:scale-[1.1] transition-all"
+            >
+              {/* Header: Deadline + Category */}
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-light text-gray-800">
+                  Deadline:{" "}
+                  {deadline
+                    ? new Date(deadline).toLocaleDateString()
+                    : "No deadline"}
+                </span>
+                <span className="px-3 py-1 text-[8px] text-blue-800 uppercase bg-blue-200 rounded-full">
+                  {category}
+                </span>
+              </div>
 
-      <div>
-        <h1 className='mt-2 text-lg font-semibold text-gray-800 '>
-          E-commerce Website Development
-        </h1>
+              {/* Job Info */}
+              <div>
+                <h1 className="mt-2 text-lg font-semibold text-gray-800">
+                  {title}
+                </h1>
 
-        <p className='mt-2 text-sm text-gray-600 '>
-          Dramatically redefine bleeding-edge infrastructures after
-          client-focused value. Intrinsicly seize user-centric partnerships
-          through out-of-the-box architectures. Distinctively.
-        </p>
-        <p className='mt-2 text-sm font-bold text-gray-600 '>
-          Range: $500 - $600
-        </p>
-        <p className='mt-2 text-sm font-bold text-gray-600 '>Total Bids: 0</p>
-      </div>
-    </Link>
-  )
-}
+                <p className="mt-2 text-sm text-gray-600">
+                  {description || "No description available."}
+                </p>
 
-export default JobCard
+                <p className="mt-2 text-sm font-bold text-gray-600">
+                  Range: ${minPrice} - ${maxPrice}
+                </p>
+
+                <p className="mt-2 text-sm font-bold text-gray-600">
+                  Total Bids: {totalBids}
+                </p>
+
+                <p className="mt-2 text-sm text-gray-500">Buyer: {buyerName}</p>
+              </div>
+            </Link>
+          )
+        )
+      ) : (
+        <p>No jobs available</p>
+      )}
+    </div>
+  );
+};
+
+export default JobCard;
