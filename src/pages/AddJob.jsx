@@ -4,12 +4,17 @@ import "react-datepicker/dist/react-datepicker.css";
 import { AuthContext } from "../providers/AuthProvider";
 import axios from "axios";
 import Swal from 'sweetalert2';
+import { useNavigate } from "react-router-dom";
+import toast, { Toaster } from 'react-hot-toast';
+
+
 
 const AddJob = () => {
+  const navigate = useNavigate();
   const [startDate, setStartDate] = useState(new Date());
 
-  const user = useContext(AuthContext);
-  console.log(user.user);
+  const {user} = useContext(AuthContext);
+  console.log(user.email);
   // add job form data
   const handleAddJob = async (e) => {
     e.preventDefault();
@@ -25,8 +30,8 @@ const AddJob = () => {
       title,
       buyer: {
         email,
-        name: user?.user?.displayName,
-        photo: user?.user?.photoURL,
+        name: user?.displayName,
+        photo: user?.photoURL,
       },
       deadline,
       category,
@@ -36,7 +41,9 @@ const AddJob = () => {
       bit_count: 0,
     };
 
-    const { data } = await axios.post(
+    try{
+      // add job post 
+         const { data } = await axios.post(
       `${import.meta.env.VITE_BASE_URL}/posts`,
       addJobData
     );
@@ -50,7 +57,14 @@ const AddJob = () => {
       timer: 1500,
     });
     e.target.reset();
+    form.reset();
+    navigate('/my-posted-jobs')
     }
+    }catch(err) {
+      console.log(err)
+      toast.error(`${err.message}`);
+    }
+ 
   };
 
   return (
@@ -79,7 +93,7 @@ const AddJob = () => {
                 Email Address
               </label>
               <input
-                defaultValue={user?.user?.email}
+                defaultValue={user?.email}
                 disabled={true}
                 id="emailAddress"
                 type="email"

@@ -1,9 +1,24 @@
 /* eslint-disable no-unused-vars */
 
+import { useEffect, useState } from 'react';
 import JobCard from '../components/JobCard'
+import axios from 'axios';
 
 
 const AllJobs = () => {
+
+    
+    const [posts, setPosts] = useState([]);
+  
+    useEffect(() => {
+      fetchAllJob();
+    }, [])
+    
+    const fetchAllJob = async () => {
+       const {data} = await axios.get (`${import.meta.env.VITE_BASE_URL}/posts`);
+       setPosts(data);
+    }
+  console.log(posts)
 
   return (
     <div className='container px-6 py-10 mx-auto min-h-[calc(100vh-306px)] flex flex-col justify-between'>
@@ -50,8 +65,12 @@ const AllJobs = () => {
           </div>
           <button className='btn'>Reset</button>
         </div>
-        <div className='my-10'>
-          <JobCard />
+        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 my-10'>
+          {
+            posts?.map(post => (
+              <JobCard key={post?._id} data={post} />
+            ))
+          }
         </div>
       </div>
     </div>
